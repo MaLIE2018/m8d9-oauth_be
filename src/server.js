@@ -8,7 +8,9 @@ import  createError from 'http-errors';
 import cors from "cors"
 import rc from './routes/comments.js';
 import mongoose from "mongoose"
-
+import passport from 'passport';
+import oauth from "./methods/auth/oauth.js"
+import cookieParser from 'cookie-parser'
 const port = process.env.PORT || 3001;
 
 const whiteList = [process.env.FRONTEND_DEV_URL, process.env.FRONTEND_CLOUD_URL]
@@ -22,13 +24,16 @@ const corsOptions = {
     } else{
       next(createError(403,{message: "Check your cors settings!"}))
     }
-  }
+  },
+  credentials: true
 }
 
 /*Global Middleware */
 app.use(express.static(publicFolderPath2))
 app.use(express.json())
 app.use(cors(corsOptions))
+app.use(passport.initialize())
+app.use(cookieParser())
 /*Routes */
 app.use("/authors",ARouter, fRouter)
 app.use("/blogPosts", bpRouter, fRouter, rc)

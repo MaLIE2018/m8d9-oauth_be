@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcrypt'
+import createError  from 'http-errors';
 
 const {Schema, model} = mongoose
 
@@ -7,10 +8,11 @@ const authorSchema = new Schema({
   name: {type: String, required: true},
   avatar:{type: String, default: ""},
   email: {type: String, required: true},
-  password: {type: String, required: true},
-  dateOfBirth:{type: Date, required: true},
+  password: {type: String},
+  dateOfBirth:{type: Date},
   blogPosts:[{type: Schema.Types.ObjectId, ref: "blogposts"}, {default:[]}],
-  refreshToken: {type: String, default: ""}
+  refreshToken: {type: String, default: ""},
+  googleId:{type: String}
 }, {timestamps: true})
 
 
@@ -41,19 +43,17 @@ authorSchema.pre("save", async function(next){
 
 
 authorSchema.statics.checkCredentials = async function(email, plainPw){
-console.log('plainPw:', plainPw)
 
-  console.log('email:', email)
   const user = await this.findOne({email})
-  console.log('user:', user)
+
  
   
   if(user){
     const hashedPw = user.password
-    console.log('hashedPw:', hashedPw)
+   
 
     const isMatch = await bcrypt.compare(plainPw,hashedPw)
-    console.log('isMatch:', isMatch)
+ 
 
     if(isMatch) return user
     else return null

@@ -4,14 +4,14 @@ import  createError  from 'http-errors';
 import { verifyToken } from "./tools.js";
 
 
-export const JWTMiddleware = async(req,res,next) => {
-  if(!req.headers.authorization){
+export const JWTMiddleware = async(req,res,next) => {  // IF YOU DON'T USE COOKIE-PARSER REQ.COOKIES WILL BE UNDEFINED!!
+  if(!req.cookies.accessToken){
     next(createError(401, {message:"Authorization required"}))
   }else{
     try {
-      const token = req.headers.authorization.replace("Bearer ", "");
+      // const token = req.headers.authorization.replace("Bearer ", "");
       
-      const content = await verifyToken(token)
+      const content = await verifyToken(req.cookies.accessToken)
   
       const user = await authorModel.findById(content._id)
   
@@ -33,7 +33,7 @@ export const JWTMiddleware = async(req,res,next) => {
 
 
 export const basicAuthMiddleware = async (req, res, next) => {
-  console.log("Basic")
+
   if(!req.headers.authorization) {
       next(createError(401, {message: 'Authorization required'}));
   }else{

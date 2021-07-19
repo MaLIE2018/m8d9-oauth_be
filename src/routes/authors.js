@@ -7,11 +7,26 @@ import {createFileStream} from "../methods/csv.js"
 import Authors from "../methods/schemas/authorSchema.js"
 import { basicAuthMiddleware, JWTMiddleware } from '../methods/auth/basic.js';
 import { JWTAuthenticate, JWTRefreshAuth } from '../methods/auth/tools.js';
+import passport from 'passport';
 
 const ARouter = express.Router();
 const filePath = getFilePath('authors.json')
 
 // ********************Requests******************************
+
+ARouter.get("/googlelogin", passport.authenticate("google", {scope:["profile", "email"]}))
+
+ARouter.get("/googleRedirect", passport.authenticate("google"), async (req, res,next) => {
+  try {
+  res.cookie("accessToken", req.user.tokens.accessToken, {httpOnly: true});
+  res.cookie("refreshToken", req.user.tokens.refreshToken, {httpOnly: true});
+  res.status(200).redirect("http://localhost:3000")
+    } catch (error) {
+      next(error)
+    }
+})
+
+
 
 ARouter.get("/login",basicAuthMiddleware, async (req, res, next) => {
   try {    
@@ -24,6 +39,21 @@ ARouter.get("/login",basicAuthMiddleware, async (req, res, next) => {
       }  
   } catch (error) {
     console.log(error)
+    next(error)
+  }
+})
+
+ARouter.get("/me", JWTMiddleware, async (req, res, next) =>{
+  try {
+    const user = req.user
+
+    if(user){
+      res.status(200).send({user})
+    }else{
+      next(createError(404, {message:"User not found"}))
+    }
+
+  } catch (error) {
     next(error)
   }
 })
@@ -48,8 +78,6 @@ ARouter.get('/', JWTMiddleware,async (req, res, next) => {
   }
   
 })
-
-
 
 ARouter.get('/csv', JWTMiddleware,async (req, res, next) => {
   try {

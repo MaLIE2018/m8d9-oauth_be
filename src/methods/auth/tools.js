@@ -23,7 +23,7 @@ const generateRefreshToken = payload => new Promise((resolve, reject)=>
 )
 
 const generateTempJWT = payload => new Promise((resolve, reject) => 
-jwt.sign(payload, process.env.JWT_SECRET,{expiresIn: "10 sec"}, (err, token) => {
+jwt.sign(payload, process.env.JWT_SECRET,{expiresIn: "15 min"}, (err, token) => {
   if(err) reject(err)
 
   resolve(token)
